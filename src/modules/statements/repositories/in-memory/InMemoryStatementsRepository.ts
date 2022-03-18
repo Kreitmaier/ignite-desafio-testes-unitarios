@@ -1,5 +1,7 @@
 import { Statement } from "../../entities/Statement";
+import { OperationType } from "../../useCases/createStatement/CreateStatementController";
 import { ICreateStatementDTO } from "../../useCases/createStatement/ICreateStatementDTO";
+import { ICreateTransferStatementDTO } from "../../useCases/createTransferStatement/ICreateTransferStatementDTO";
 import { IGetBalanceDTO } from "../../useCases/getBalance/IGetBalanceDTO";
 import { IGetStatementOperationDTO } from "../../useCases/getStatementOperation/IGetStatementOperationDTO";
 import { IStatementsRepository } from "../IStatementsRepository";
@@ -47,5 +49,39 @@ export class InMemoryStatementsRepository implements IStatementsRepository {
     }
 
     return { balance }
+  }
+
+  async createTransfer({ 
+    user_id, 
+    sender_id, 
+    amount, 
+    description, 
+    type 
+  }: ICreateTransferStatementDTO): Promise<Statement>{
+    
+    const transferStatement = new Statement();
+
+    Object.assign(transferStatement, {
+      user_id, 
+      sender_id, 
+      amount, 
+      description, 
+      type 
+    });    
+
+    this.statements.push(transferStatement);
+
+    const withdrawSenderStatement = new Statement();
+
+    Object.assign(withdrawSenderStatement, {
+      user_id: sender_id,
+      amount, 
+      description: 'automatic withdraw by transfer', 
+      type: 'withdraw' as OperationType 
+    });
+
+    this.statements.push(withdrawSenderStatement);
+
+    return transferStatement;
   }
 }
